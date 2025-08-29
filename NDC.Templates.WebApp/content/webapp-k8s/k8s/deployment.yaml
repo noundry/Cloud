@@ -1,0 +1,189 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Company.WebApplication1-api
+  namespace: default
+  labels:
+    app: Company.WebApplication1-api
+    version: "1.0"
+    managed-by: ndc
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: Company.WebApplication1-api
+  template:
+    metadata:
+      labels:
+        app: Company.WebApplication1-api
+        version: "1.0"
+    spec:
+      containers:
+      - name: api
+        image: your-registry/Company.WebApplication1:latest
+        ports:
+        - containerPort: Port
+          name: http
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: ASPNETCORE_URLS
+          value: "http://+:Port"
+#if (HasDatabase)
+        - name: ConnectionStrings__Database
+          valueFrom:
+            secretKeyRef:
+              name: Company.WebApplication1-secrets
+              key: database-connection-string
+#endif
+#if (IncludeCache)
+        - name: ConnectionStrings__Redis
+          valueFrom:
+            configMapKeyRef:
+              name: Company.WebApplication1-config
+              key: redis-connection-string
+#endif
+#if (IncludeStorage)
+        - name: S3__BucketName
+          valueFrom:
+            configMapKeyRef:
+              name: Company.WebApplication1-config
+              key: s3-bucket-name
+        - name: S3__Region
+          valueFrom:
+            configMapKeyRef:
+              name: Company.WebApplication1-config
+              key: aws-region
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: Company.WebApplication1-secrets
+              key: aws-access-key-id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: Company.WebApplication1-secrets
+              key: aws-secret-access-key
+#endif
+#if (IncludeMail)
+        - name: Email__Smtp__Host
+          valueFrom:
+            configMapKeyRef:
+              name: Company.WebApplication1-config
+              key: smtp-host
+        - name: Email__Smtp__Port
+          valueFrom:
+            configMapKeyRef:
+              name: Company.WebApplication1-config
+              key: smtp-port
+        - name: Email__Smtp__Username
+          valueFrom:
+            secretKeyRef:
+              name: Company.WebApplication1-secrets
+              key: smtp-username
+        - name: Email__Smtp__Password
+          valueFrom:
+            secretKeyRef:
+              name: Company.WebApplication1-secrets
+              key: smtp-password
+#endif
+#if (IncludeQueue)
+        - name: MessageQueue__SQSQueueUrl
+          valueFrom:
+            configMapKeyRef:
+              name: Company.WebApplication1-config
+              key: sqs-queue-url
+#endif
+        
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+            
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: Port
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: Port
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          
+        startupProbe:
+          httpGet:
+            path: /health
+            port: Port
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 10
+
+      restartPolicy: Always
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: Company.WebApplication1-api-service
+  labels:
+    app: Company.WebApplication1-api
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: Port
+    name: http
+  selector:
+    app: Company.WebApplication1-api
+
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: Company.WebApplication1-api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: Company.WebApplication1-api
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60

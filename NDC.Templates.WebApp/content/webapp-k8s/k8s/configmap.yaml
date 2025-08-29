@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: Company.WebApplication1-config
+  labels:
+    app: Company.WebApplication1
+data:
+  # Application configuration
+  aspnetcore-environment: "Production"
+  
+#if (IncludeCache)
+  # Redis configuration (update for your cloud provider)
+  redis-connection-string: "your-redis-cluster-endpoint:6379"
+#endif
+
+#if (IncludeStorage)
+  # S3 configuration (update for your cloud provider)
+  s3-bucket-name: "your-s3-bucket-name"
+  aws-region: "us-east-1"
+#endif
+
+#if (IncludeMail)
+  # SMTP configuration (update for your email provider)
+  smtp-host: "smtp.amazonaws.com"
+  smtp-port: "587"
+#endif
+
+#if (IncludeQueue)
+  # Message queue configuration (update for your cloud provider)
+  sqs-queue-url: "https://sqs.us-east-1.amazonaws.com/123456789012/your-queue-name"
+#endif
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: Company.WebApplication1-secrets
+  labels:
+    app: Company.WebApplication1
+type: Opaque
+data:
+#if (HasDatabase)
+  # Database connection string (base64 encoded)
+  # Update this with your actual database connection string
+  database-connection-string: "" # base64: Host=your-db-host;Database=myapp;Username=user;Password=pass
+#endif
+
+#if (IncludeStorage)
+  # AWS credentials (base64 encoded)
+  aws-access-key-id: ""     # base64: your-access-key
+  aws-secret-access-key: "" # base64: your-secret-key
+#endif
+
+#if (IncludeMail)
+  # SMTP credentials (base64 encoded)
+  smtp-username: "" # base64: your-smtp-username
+  smtp-password: "" # base64: your-smtp-password
+#endif
+
+---
+# Example of how to create secrets:
+# kubectl create secret generic Company.WebApplication1-secrets \
+#   --from-literal=database-connection-string="Host=my-db;Database=myapp;Username=user;Password=pass" \
+#   --from-literal=aws-access-key-id="AKIAIOSFODNN7EXAMPLE" \
+#   --from-literal=aws-secret-access-key="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" \
+#   --from-literal=smtp-username="your-email@domain.com" \
+#   --from-literal=smtp-password="your-app-password"
+
+# Example of how to update config:
+# kubectl create configmap Company.WebApplication1-config \
+#   --from-literal=redis-connection-string="my-redis-cluster.cache.amazonaws.com:6379" \
+#   --from-literal=s3-bucket-name="my-app-storage-bucket" \
+#   --from-literal=aws-region="us-east-1" \
+#   --from-literal=smtp-host="email-smtp.us-east-1.amazonaws.com" \
+#   --from-literal=smtp-port="587" \
+#   --from-literal=sqs-queue-url="https://sqs.us-east-1.amazonaws.com/123456789012/my-app-queue"

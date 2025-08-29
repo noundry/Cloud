@@ -26,6 +26,7 @@ public class Program
         rootCommand.AddCommand(new ListCommand(serviceProvider));
         rootCommand.AddCommand(new InstallCommand(serviceProvider));
         rootCommand.AddCommand(new UninstallCommand(serviceProvider));
+        rootCommand.AddCommand(new DeployCommand(serviceProvider));
         
         // Add global options
         var verboseOption = new Option<bool>(
@@ -64,6 +65,7 @@ public class Program
                 services.AddSingleton<IAspireService, AspireService>();
                 services.AddSingleton<ICloudService, CloudService>();
                 services.AddSingleton<INuGetService, NuGetService>();
+                services.AddSingleton<IDeploymentService, DeploymentService>();
                 
                 // Configure logging
                 services.AddLogging(builder =>

@@ -1,0 +1,100 @@
+# Production Docker Compose for Company.WebApplication1
+# This deploys only the API container with external cloud services
+
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "Port:Port"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:Port
+      
+      # Database connection (configure for your cloud database)
+#if (HasDatabase)
+      - ConnectionStrings__Database=${DATABASE_CONNECTION_STRING}
+#endif
+#if (IncludeCache)  
+      # Redis connection (configure for your cloud cache)
+      - ConnectionStrings__Redis=${REDIS_CONNECTION_STRING}
+#endif
+#if (IncludeStorage)
+      # S3 configuration (configure for your cloud storage)
+      - S3__BucketName=${S3_BUCKET_NAME}
+      - S3__Region=${AWS_REGION}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+#endif
+#if (IncludeMail)
+      # Email configuration (configure for your cloud email service)
+      - Email__Smtp__Host=${SMTP_HOST}
+      - Email__Smtp__Port=${SMTP_PORT}
+      - Email__Smtp__Username=${SMTP_USERNAME}
+      - Email__Smtp__Password=${SMTP_PASSWORD}
+#endif
+#if (IncludeQueue)
+      # Message queue configuration
+      - MessageQueue__SQSQueueUrl=${SQS_QUEUE_URL}
+#endif
+      
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:Port/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+
+  # Optional: Add a reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/ssl/certs:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+
+# Networks
+networks:
+  default:
+    driver: bridge
+
+# Example environment file (.env.production):
+# DATABASE_CONNECTION_STRING=Host=your-db-host;Database=myapp;Username=user;Password=pass
+# REDIS_CONNECTION_STRING=your-redis-host:6379
+# S3_BUCKET_NAME=your-bucket-name
+# AWS_REGION=us-east-1
+# AWS_ACCESS_KEY_ID=your-access-key
+# AWS_SECRET_ACCESS_KEY=your-secret-key
+# SMTP_HOST=smtp.gmail.com
+# SMTP_PORT=587
+# SMTP_USERNAME=your-email@gmail.com
+# SMTP_PASSWORD=your-app-password
+# SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/123456789012/my-queue

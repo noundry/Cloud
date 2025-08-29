@@ -221,20 +221,20 @@ public class TemplateService : ITemplateService
     {
         return new List<TemplateInfo>
         {
-            // Simple templates
-            new() { ShortName = "dotnet-webapp-aws", Name = ".NET Web App for AWS", Description = "Simple .NET web application for AWS App Runner", CloudProvider = "AWS", IsAspire = false },
-            new() { ShortName = "dotnet-webapp-gcp", Name = ".NET Web App for Google Cloud", Description = "Simple .NET web application for Google Cloud Run", CloudProvider = "GCP", IsAspire = false },
-            new() { ShortName = "dotnet-webapp-azure", Name = ".NET Web App for Azure", Description = "Simple .NET web application for Azure Container Apps", CloudProvider = "Azure", IsAspire = false },
+            // Web App Templates (Aspire for local DX, deploy API only)
+            new() { ShortName = "webapp-aws", Name = "Web App for AWS App Runner", Description = "Web application for AWS App Runner (Aspire local DX)", CloudProvider = "AWS", IsAspire = true },
+            new() { ShortName = "webapp-gcp", Name = "Web App for Google Cloud Run", Description = "Web application for Google Cloud Run (Aspire local DX)", CloudProvider = "GCP", IsAspire = true },
+            new() { ShortName = "webapp-azure", Name = "Web App for Azure Container Apps", Description = "Web application for Azure Container Apps (Aspire local DX)", CloudProvider = "Azure", IsAspire = true },
             
-            // Aspire templates
-            new() { ShortName = "aspire-webapp-aws", Name = "Aspire Web App for AWS", Description = "Aspire web application with service discovery for AWS", CloudProvider = "AWS", IsAspire = true },
-            new() { ShortName = "aspire-webapp-gcp", Name = "Aspire Web App for Google Cloud", Description = "Aspire web application with service discovery for Google Cloud", CloudProvider = "GCP", IsAspire = true },
-            new() { ShortName = "aspire-webapp-azure", Name = "Aspire Web App for Azure", Description = "Aspire web application with service discovery for Azure", CloudProvider = "Azure", IsAspire = true },
+            // Container Platform Templates
+            new() { ShortName = "webapp-docker", Name = "Web App for Docker", Description = "Web application with Docker Compose deployment", CloudProvider = "Docker", IsAspire = true },
+            new() { ShortName = "webapp-k8s", Name = "Web App for Kubernetes", Description = "Web application with Kubernetes manifests", CloudProvider = "Kubernetes", IsAspire = true },
             
-            // Full-stack templates
-            new() { ShortName = "aspire-fullstack-aws", Name = "Aspire Full-Stack App for AWS", Description = "Complete Aspire application with all services for AWS", CloudProvider = "AWS", IsAspire = true },
-            new() { ShortName = "aspire-fullstack-gcp", Name = "Aspire Full-Stack App for Google Cloud", Description = "Complete Aspire application with all services for Google Cloud", CloudProvider = "GCP", IsAspire = true },
-            new() { ShortName = "aspire-fullstack-azure", Name = "Aspire Full-Stack App for Azure", Description = "Complete Aspire application with all services for Azure", CloudProvider = "Azure", IsAspire = true }
+            // Platform-specific templates
+            new() { ShortName = "webapp-railway", Name = "Web App for Railway", Description = "Web application optimized for Railway deployment", CloudProvider = "Railway", IsAspire = true },
+            new() { ShortName = "webapp-render", Name = "Web App for Render", Description = "Web application optimized for Render deployment", CloudProvider = "Render", IsAspire = true },
+            new() { ShortName = "webapp-fly", Name = "Web App for Fly.io", Description = "Web application optimized for Fly.io deployment", CloudProvider = "Fly.io", IsAspire = true },
+            new() { ShortName = "webapp-heroku", Name = "Web App for Heroku", Description = "Web application optimized for Heroku deployment", CloudProvider = "Heroku", IsAspire = true }
         };
     }
 
