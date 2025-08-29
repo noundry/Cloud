@@ -1,0 +1,160 @@
+name: Publish NDC CLI and Templates
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Restore dependencies
+      run: dotnet restore NDC.Cli/NDC.Cli.csproj
+    
+    - name: Build
+      run: dotnet build NDC.Cli/NDC.Cli.csproj --no-restore --configuration Release
+    
+    - name: Test template generation
+      run: |
+        # Install the CLI tool locally
+        dotnet pack NDC.Cli/NDC.Cli.csproj --no-build --configuration Release --output ./packages
+        dotnet tool install --global --add-source ./packages NDC.Cli
+        
+        # Install template packages
+        dotnet new install NDC.Templates.Aspire.Aws/
+        
+        # Test template creation
+        mkdir -p test-output
+        cd test-output
+        
+        # Test basic template
+        ndc create aspire-webapp-aws --name TestApp --database PostgreSQL --include-cache true
+        
+        # Verify generated files exist
+        [ -f TestApp/TestApp.sln ] || exit 1
+        [ -f TestApp/src/TestApp.AppHost/TestApp.AppHost.csproj ] || exit 1
+
+  publish-cli:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Get version from tag
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+    
+    - name: Update version in CLI project
+      run: |
+        sed -i "s/<PackageVersion>.*<\/PackageVersion>/<PackageVersion>${{ steps.version.outputs.VERSION }}<\/PackageVersion>/" NDC.Cli/NDC.Cli.csproj
+    
+    - name: Pack CLI tool
+      run: dotnet pack NDC.Cli/NDC.Cli.csproj --configuration Release --output ./packages -p:PackageVersion=${{ steps.version.outputs.VERSION }}
+    
+    - name: Publish CLI to NuGet
+      run: dotnet nuget push ./packages/NDC.Cli.${{ steps.version.outputs.VERSION }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+
+  publish-templates:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        template: 
+          - NDC.Templates.Aspire.Aws
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Get version from tag
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+    
+    - name: Update version in template project
+      run: |
+        sed -i "s/<PackageVersion>.*<\/PackageVersion>/<PackageVersion>${{ steps.version.outputs.VERSION }}<\/PackageVersion>/" ${{ matrix.template }}/${{ matrix.template }}.csproj
+    
+    - name: Pack template package
+      run: dotnet pack ${{ matrix.template }}/${{ matrix.template }}.csproj --configuration Release --output ./packages -p:PackageVersion=${{ steps.version.outputs.VERSION }}
+    
+    - name: Publish templates to NuGet
+      run: dotnet nuget push ./packages/${{ matrix.template }}.${{ steps.version.outputs.VERSION }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+
+  create-release:
+    needs: [test, publish-cli, publish-templates]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Get version from tag
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body: |
+          ## NDC (Noundry Deploy CLI) v${{ steps.version.outputs.VERSION }}
+          
+          ### 🚀 C# Implementation with Aspire Integration
+          
+          #### 📦 Installation
+          ```bash
+          # Install CLI tool
+          dotnet tool install --global NDC.Cli
+          
+          # Install AWS template package
+          dotnet new install NDC.Templates.Aspire.Aws
+          ```
+          
+          #### 🛠️ Usage
+          ```bash
+          # Create Aspire web app
+          ndc create aspire-webapp-aws --name MyApp
+          
+          # Create with all services
+          ndc create aspire-webapp-aws --name MyProject \
+            --database PostgreSQL \
+            --services cache,storage,mail,queue,jobs,worker
+          ```
+          
+          #### ✨ What's New
+          - **Native C# CLI**: Built with System.CommandLine
+          - **Aspire Integration**: Full service orchestration
+          - **Service Discovery**: Local-to-cloud mapping
+          - **Rich Templates**: Complex conditional logic
+          - **NuGet Distribution**: Standard .NET package management
+          
+          #### 🏗️ Generated Architecture
+          - Aspire AppHost for local orchestration
+          - Multi-project solution (Api, Worker, ServiceDefaults)
+          - Complete Terraform infrastructure
+          - Docker Compose for development
+          - Production-ready containers
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
