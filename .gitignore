@@ -1,0 +1,50 @@
+# Compiled binaries
+noundry
+noundry.exe
+dist/
+build/
+
+# Go build cache
+*.so
+*.dylib
+*.dll
+*.test
+*.out
+
+# Go modules cache
+go.mod.local
+go.sum.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test output
+test-output/
+temp/
+
+# Log files
+*.log
+
+# Coverage files
+*.cover
+*.coverprofile
+coverage.html
+coverage.out
+
+# Local environment files
+.env
+.env.local
+.env.*.local
