@@ -32,6 +32,16 @@ var (
 	maxInstances  int
 	cpu           string
 	memory        string
+	
+	// Aspire-specific options
+	database      string
+	includeCache  bool
+	includeStorage bool
+	includeMail   bool
+	includeMessageQueue bool
+	includeJobs   bool
+	includeWorker bool
+	servicesFlag  string
 )
 
 func init() {
@@ -46,11 +56,24 @@ func init() {
 	createCmd.Flags().StringVar(&cpu, "cpu", "", "CPU allocation (cloud-specific)")
 	createCmd.Flags().StringVar(&memory, "memory", "", "Memory allocation (cloud-specific)")
 	
+	// Aspire-specific flags
+	createCmd.Flags().StringVar(&database, "database", "", "Database type (PostgreSQL, MySQL, SqlServer)")
+	createCmd.Flags().BoolVar(&includeCache, "cache", false, "Include Redis cache")
+	createCmd.Flags().BoolVar(&includeStorage, "storage", false, "Include S3-compatible storage")
+	createCmd.Flags().BoolVar(&includeMail, "mail", false, "Include email service")
+	createCmd.Flags().BoolVar(&includeMessageQueue, "queue", false, "Include message queue")
+	createCmd.Flags().BoolVar(&includeJobs, "jobs", false, "Include background jobs")
+	createCmd.Flags().BoolVar(&includeWorker, "worker", false, "Include worker service")
+	createCmd.Flags().StringVar(&servicesFlag, "services", "", "Comma-separated services (database,cache,storage,mail,queue,jobs,worker,all)")
+	
 	createCmd.MarkFlagRequired("name")
 }
 
 func createProject(cmd *cobra.Command, args []string) {
 	template := args[0]
+	
+	// Parse services flag
+	services := parseServicesFlag(servicesFlag)
 	
 	config := generator.ProjectConfig{
 		Name:         projectName,
@@ -63,6 +86,15 @@ func createProject(cmd *cobra.Command, args []string) {
 		MaxInstances: maxInstances,
 		CPU:          cpu,
 		Memory:       memory,
+		
+		// Aspire-specific options
+		Database:            database,
+		IncludeCache:        includeCache || services["cache"] || services["all"],
+		IncludeStorage:      includeStorage || services["storage"] || services["all"],
+		IncludeMail:         includeMail || services["mail"] || services["all"],
+		IncludeMessageQueue: includeMessageQueue || services["queue"] || services["all"],
+		IncludeJobs:         includeJobs || services["jobs"] || services["all"],
+		IncludeWorker:       includeWorker || services["worker"] || services["all"],
 	}
 	
 	if err := generator.ValidateTemplate(template); err != nil {

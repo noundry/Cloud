@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>{{.Framework}}</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>{{.ProjectGuid}}</UserSecretsId>
+    <IsAspireHost>true</IsAspireHost>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting" Version="9.0.0" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="9.0.0" Condition="'{{.Database}}' == 'PostgreSQL'" />
+    <PackageReference Include="Aspire.Hosting.MySQL" Version="9.0.0" Condition="'{{.Database}}' == 'MySQL'" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.0.0" Condition="'{{.Database}}' == 'SqlServer'" />
+    <PackageReference Include="Aspire.Hosting.Redis" Version="9.0.0" Condition="'{{.IncludeCache}}' == 'true'" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="9.0.0" Condition="'{{.IncludeMessageQueue}}' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\{{.ProjectName}}.Api\{{.ProjectName}}.Api.csproj" />
+    <ProjectReference Include="..\{{.ProjectName}}.ServiceDefaults\{{.ProjectName}}.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\{{.ProjectName}}.Worker\{{.ProjectName}}.Worker.csproj" Condition="'{{.IncludeWorker}}' == 'true'" />
+  </ItemGroup>
+
+</Project>

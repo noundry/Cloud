@@ -16,12 +16,27 @@ type ProjectConfig struct {
 	MaxInstances int
 	CPU          string
 	Memory       string
+	
+	// Aspire-specific options
+	Database         string
+	IncludeCache     bool
+	IncludeStorage   bool
+	IncludeMail      bool
+	IncludeMessageQueue bool
+	IncludeJobs      bool
+	IncludeWorker    bool
 }
 
 var supportedTemplates = map[string]bool{
-	"dotnet-webapp-aws":   true,
-	"dotnet-webapp-gcp":   true,
-	"dotnet-webapp-azure": true,
+	"dotnet-webapp-aws":     true,
+	"dotnet-webapp-gcp":     true,
+	"dotnet-webapp-azure":   true,
+	"aspire-webapp-aws":     true,
+	"aspire-webapp-gcp":     true,
+	"aspire-webapp-azure":   true,
+	"aspire-fullstack-aws":  true,
+	"aspire-fullstack-gcp":  true,
+	"aspire-fullstack-azure": true,
 }
 
 func ValidateTemplate(template string) error {

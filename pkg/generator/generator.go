@@ -102,8 +102,23 @@ func processTemplateFile(sourcePath, destPath string, config ProjectConfig) erro
 		"Memory":         config.Memory,
 		"ECRRepoName":    fmt.Sprintf("%s/%s", "noundry", strings.ToLower(config.Name)),
 		"ServiceName":    strings.ToLower(config.Name),
-		"ProjectGuid":    generateGUID(),
 		"Region":         getDefaultRegion(config.Template),
+		
+		// GUIDs for solution projects
+		"ProjectGuid":         generateGUID(),
+		"AppHostGuid":         generateGUID(),
+		"ApiGuid":            generateGUID(),
+		"ServiceDefaultsGuid": generateGUID(),
+		"WorkerGuid":         generateGUID(),
+		
+		// Aspire-specific configuration
+		"Database":            getDefaultDatabase(config),
+		"IncludeCache":       config.IncludeCache || isAspireTemplate(config.Template),
+		"IncludeStorage":     config.IncludeStorage || isFullStackTemplate(config.Template),
+		"IncludeMail":        config.IncludeMail || isFullStackTemplate(config.Template),
+		"IncludeMessageQueue": config.IncludeMessageQueue || isFullStackTemplate(config.Template),
+		"IncludeJobs":        config.IncludeJobs || isFullStackTemplate(config.Template),
+		"IncludeWorker":      config.IncludeWorker || isFullStackTemplate(config.Template),
 	}
 	
 	if err := tmpl.Execute(destFile, templateData); err != nil {
@@ -138,13 +153,39 @@ func generateGUID() string {
 
 func getDefaultRegion(template string) string {
 	switch template {
-	case "dotnet-webapp-aws":
+	case "dotnet-webapp-aws", "aspire-webapp-aws", "aspire-fullstack-aws":
 		return "us-east-1"
-	case "dotnet-webapp-gcp":
+	case "dotnet-webapp-gcp", "aspire-webapp-gcp", "aspire-fullstack-gcp":
 		return "us-central1"
-	case "dotnet-webapp-azure":
+	case "dotnet-webapp-azure", "aspire-webapp-azure", "aspire-fullstack-azure":
 		return "eastus"
 	default:
 		return "us-east-1"
 	}
+}
+
+func getDefaultDatabase(config ProjectConfig) string {
+	if config.Database != "" {
+		return config.Database
+	}
+	
+	// Default database per cloud provider
+	switch config.Template {
+	case "aspire-webapp-aws", "aspire-fullstack-aws":
+		return "PostgreSQL"
+	case "aspire-webapp-gcp", "aspire-fullstack-gcp":
+		return "PostgreSQL"
+	case "aspire-webapp-azure", "aspire-fullstack-azure":
+		return "SqlServer"
+	default:
+		return "PostgreSQL"
+	}
+}
+
+func isAspireTemplate(template string) bool {
+	return strings.HasPrefix(template, "aspire-")
+}
+
+func isFullStackTemplate(template string) bool {
+	return strings.Contains(template, "fullstack")
 }
