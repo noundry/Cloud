@@ -1,93 +1,121 @@
 # Getting Started with NDC
 
-NDC (Noundry Deploy CLI) makes it easy to generate production-ready .NET applications for AWS, Google Cloud, and Azure.
+A simple guide to using the current NDC implementation.
 
-## Installation
+## Current Status
 
-### Quick Install (Linux/macOS)
-```bash
-curl -fsSL https://raw.githubusercontent.com/plsft/noundry-cloud-cli/main/install.sh | sh
-```
+✅ **What's Working:**
+- C# CLI framework (System.CommandLine + Spectre.Console)
+- AWS template with full Aspire integration
+- Complete Terraform for AWS App Runner + managed services
+- Local development with PostgreSQL, Redis, MinIO orchestration
 
-### Manual Installation
-1. Download the latest release for your platform from [Releases](https://github.com/plsft/noundry-cloud-cli/releases)
-2. Extract the archive
-3. Move the binary to a directory in your PATH
+🚧 **In Development:**
+- Template package publishing to NuGet
+- Multi-cloud templates (GCP, Azure)
+- Automated `ndc create` command
 
-### Build from Source
+## Quick Start
+
+### 1. Clone Repository
 ```bash
 git clone https://github.com/plsft/noundry-cloud-cli.git
 cd noundry-cloud-cli
-make build
-make install
 ```
 
-## First Project
-
-Let's create your first cloud-native .NET application:
-
-### 1. Choose Your Cloud Platform
-
+### 2. Use the AWS Template (Manual Setup)
 ```bash
-# List available templates
-ndc list
+# Copy the working template
+cp -r NDC.Templates.WebApp/content/webapp-aws MyApp
+cd MyApp
+
+# Update template placeholders (required)
+# Replace "Company.WebApplication1" with "MyApp" in all files
+find . -type f \( -name "*.cs" -o -name "*.json" -o -name "*.csproj" -o -name "*.sln" \) \
+  -exec sed -i 's/Company\.WebApplication1/MyApp/g' {} \;
+
+# Rename directories and files
+find . -name "*Company.WebApplication1*" -type d | while read dir; do
+  new_dir="${dir//Company.WebApplication1/MyApp}"
+  mv "$dir" "$new_dir" 2>/dev/null || true
+done
+
+find . -name "*Company.WebApplication1*" -type f | while read file; do
+  new_file="${file//Company.WebApplication1/MyApp}"
+  mv "$file" "$new_file" 2>/dev/null || true
+done
 ```
 
-### 2. Create Your Project
-
+### 3. Local Development with Aspire
 ```bash
-# AWS Project
-ndc create dotnet-webapp-aws --name hello-world
+# Start all services (PostgreSQL, Redis, MinIO automatically)
+dotnet run --project src/MyApp.AppHost
 
-# Google Cloud Project
-ndc create dotnet-webapp-gcp --name hello-world
-
-# Azure Project
-ndc create dotnet-webapp-azure --name hello-world
+# ✅ API: http://localhost:8080
+# ✅ Aspire dashboard: https://localhost:17001
+# ✅ Test endpoints:
+curl http://localhost:8080/health
+curl http://localhost:8080/users
 ```
 
-### 3. Explore Generated Structure
-
-```
-hello-world/
-├── terraform/           # Infrastructure as Code
-│   ├── main.tf         # Cloud resources
-│   ├── variables.tf    # Configuration variables
-│   ├── provider.tf     # Cloud provider setup
-│   └── versions.tf     # Terraform version requirements
-├── src/
-│   └── HelloWorld/     # .NET application
-│       ├── Program.cs  # Application entry point
-│       ├── HelloWorld.csproj
-│       └── ...
-├── Dockerfile          # Container configuration
-├── HelloWorld.sln      # Visual Studio solution
-└── README.md          # Deployment instructions
-```
-
-### 4. Test Locally
-
+### 4. Deploy to AWS
 ```bash
-cd hello-world
-dotnet run --project src/HelloWorld
+# Prerequisites: AWS CLI configured, Terraform installed
+
+# Deploy infrastructure
+cd terraform
+terraform init
+terraform apply
+
+# Build API container (Dockerfile builds API project only, not AppHost)
+cd ..
+docker build -t myapp .
+
+# Push to ECR
+ECR_URL=$(cd terraform && terraform output -raw ecr_repository_url)
+aws ecr get-login-password --region us-east-1 | \
+  docker login --username AWS --password-stdin $ECR_URL
+docker tag myapp $ECR_URL:latest
+docker push $ECR_URL:latest
+
+# Get your live API URL
+cd terraform && terraform output app_runner_service_url
 ```
 
-Your app will be available at `http://localhost:8080` with:
-- `GET /` - Hello World message
-- `GET /health` - Health check endpoint
+## What You Get
 
-### 5. Deploy to Cloud
+### Local Development
+- **Aspire AppHost** orchestrates all services in containers
+- **Service Discovery** automatically configures connection strings
+- **Hot Reload** for rapid development
+- **Aspire Dashboard** for monitoring services
+- **Rich Development Environment** with debugging support
 
-Follow the cloud-specific instructions in the generated `README.md`:
+### Production Deployment  
+- **Lightweight API Container** (no Aspire dependencies)
+- **Managed AWS Services**: RDS PostgreSQL, ElastiCache Redis, S3 storage
+- **Auto-Scaling**: App Runner scales based on demand
+- **Security**: Non-root containers, encrypted services, least-privilege IAM
+- **Configuration-Driven**: Services discovered via environment variables
 
-- **AWS**: Use AWS CLI and ECR for container deployment
-- **Google Cloud**: Use gcloud CLI and Artifact Registry
-- **Azure**: Use Azure CLI and Container Registry
+## Architecture Benefits
+
+### 🎯 **Perfect Separation of Concerns**
+- **Aspire**: Used only for local development orchestration
+- **API**: Self-contained application that deploys anywhere
+- **Configuration**: Same code works locally and in cloud
+
+### 🚀 **Production-Ready**
+- Only your API code gets deployed (no orchestration overhead)
+- Connects to managed cloud services
+- Works on any container platform
+- Standard .NET deployment patterns
 
 ## Next Steps
 
-- [AWS Deployment Guide](aws-deployment.md)
-- [Google Cloud Deployment Guide](gcp-deployment.md)
-- [Azure Deployment Guide](azure-deployment.md)
-- [Customization Options](customization.md)
-- [Best Practices](best-practices.md)
+1. **Try the current AWS template** following the manual setup above
+2. **Explore the generated code** to understand the architecture
+3. **Deploy to AWS** to see the complete local → cloud workflow
+4. **Watch for updates** as the template package system is completed
+
+The current implementation demonstrates the complete vision: amazing local development with Aspire, clean production deployment of just your API code.

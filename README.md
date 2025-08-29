@@ -1,281 +1,191 @@
-# NDC (Noundry Deploy CLI) - C# Implementation
+# NDC (Noundry Deploy CLI)
 
-A powerful .NET CLI tool that generates production-ready .NET Aspire applications for AWS, Google Cloud, and Azure using Terraform and native service orchestration.
+**Aspire for Local Development + Deploy API to Any Platform**
+
+A .NET CLI tool that uses **Aspire for local development** and deploys **only your API** to cloud platforms.
 
 [![Release](https://img.shields.io/github/v/release/plsft/noundry-cloud-cli)](https://github.com/plsft/noundry-cloud-cli/releases)
-[![NuGet](https://img.shields.io/nuget/v/NDC.Cli)](https://www.nuget.org/packages/NDC.Cli/)
 [![License](https://img.shields.io/github/license/plsft/noundry-cloud-cli)](LICENSE)
 
-NDC leverages .NET's native template engine and Aspire's service orchestration to create cloud-native applications with seamless local development and cloud deployment.
+**Status**: 🚧 **Active Development** - AWS template working, CLI framework complete
 
-## 🚀 Quick Start
+---
 
-### Installation
+## 🎯 **What NDC Does**
 
+### 🏠 **Local Development (Aspire Orchestration)**
+- Automatically runs PostgreSQL, Redis, MinIO, MailHog in containers
+- Service discovery and connection strings auto-configured
+- Rich Aspire dashboard for monitoring services
+- Hot reload and debugging support
+
+### ☁️ **Production Deployment (API Container Only)**
+- Builds and deploys only your API code (lightweight)
+- Connects to managed cloud services (RDS, ElastiCache, S3, etc.)
+- Configuration-driven service discovery
+- Works on any container platform
+
+---
+
+## ⚡ **Try It Now (What's Working)**
+
+### 1. Clone and Use Working Example
 ```bash
-# Install the CLI tool
-dotnet tool install --global NDC.Cli
+git clone https://github.com/plsft/noundry-cloud-cli.git
+cd noundry-cloud-cli
 
-# Install template packages
-dotnet new install NDC.Templates.Aspire.Aws
-# dotnet new install NDC.Templates.Aspire.Gcp    # Coming soon
-# dotnet new install NDC.Templates.Aspire.Azure  # Coming soon
+# Use the working AWS template example
+cp -r examples/working-aws-template MyBlogApi
+cd MyBlogApi
 ```
 
-### Create Your First Project
-
+### 2. Start Local Development
 ```bash
-# List available templates
-ndc list
-
-# Create an Aspire web application
-ndc create aspire-webapp-aws --name MyApp
-
-# Create with specific services
-ndc create aspire-webapp-aws --name MyProject \
-  --database PostgreSQL \
-  --include-cache true \
-  --include-storage true \
-  --include-mail true \
-  --include-queue true \
-  --include-jobs true \
-  --include-worker true
-```
-
-### Local Development
-
-```bash
-cd MyApp
-
-# Start all services with Aspire (recommended)
+# This works! Aspire orchestrates all services automatically
 dotnet run --project src/MyApp.AppHost
 
-# Or use Docker Compose
-docker compose up
+# ✅ API available at: http://localhost:8080
+# ✅ Aspire dashboard at: https://localhost:17001
+# ✅ Services running: PostgreSQL, Redis, MinIO, MailHog
 ```
 
-Visit the Aspire dashboard at https://localhost:17001 to monitor your services.
+### 3. Test the API
+```bash
+# Health check
+curl http://localhost:8080/health
 
-## 🏗️ Architecture
+# Database endpoints (PostgreSQL via Aspire)
+curl http://localhost:8080/users
+curl -X POST http://localhost:8080/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John","email":"john@example.com"}'
 
-NDC creates a complete application structure with:
+# Cache endpoints (Redis via Aspire)  
+curl -X POST http://localhost:8080/cache \
+  -H "Content-Type: application/json" \
+  -d '{"key":"test","value":"hello world"}'
+curl http://localhost:8080/cache/test
+```
+
+### 4. Deploy to AWS (Complete Working Flow)
+```bash
+# Deploy infrastructure (RDS, ElastiCache, S3, App Runner)
+cd terraform
+terraform init && terraform apply
+
+# Build API container (Dockerfile builds API only, not AppHost)
+cd .. && docker build -t myblogapi .
+
+# Push to ECR and deploy
+ECR_URL=$(cd terraform && terraform output -raw ecr_repository_url)
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_URL
+docker tag myblogapi $ECR_URL:latest && docker push $ECR_URL:latest
+
+# ✅ App Runner automatically deploys API container
+# ✅ Connects to managed AWS services via environment variables
+# Get live URL: terraform output app_runner_service_url
+```
+
+---
+
+## 🏗️ **Current Implementation**
+
+### ✅ **What's Working**
+- **C# CLI Framework**: Complete System.CommandLine + Spectre.Console
+- **AWS Template**: Full Aspire local development + AWS App Runner deployment
+- **Service Integration**: PostgreSQL, Redis, S3, email configured
+- **Terraform Infrastructure**: Complete AWS setup (RDS, ElastiCache, S3, App Runner)
+- **Working Example**: `examples/working-aws-template/` - ready to use
+
+### 🚧 **In Development**  
+- **Template Package Publishing**: NuGet packages for `dotnet new install`
+- **CLI Commands**: Automated `ndc create` command
+- **Multi-Cloud Templates**: GCP and Azure versions
+- **Container Platform Templates**: Docker, Kubernetes, PaaS platforms
+
+### Architecture
 
 ```
-MyApp/
+MyApp/ (from working example)
 ├── src/
-│   ├── MyApp.AppHost/           # 🎯 Aspire orchestration
-│   ├── MyApp.Api/               # 🌐 Web API application  
-│   ├── MyApp.ServiceDefaults/   # ⚙️  Shared configuration
-│   └── MyApp.Worker/            # 🔄 Background services (optional)
-├── terraform/                   # ☁️  Cloud infrastructure
-├── docker-compose.yml          # 🐳 Local development
-├── README.md                   # 📖 Deployment guide
-└── MyApp.sln                   # 🔧 Visual Studio solution
+│   ├── MyApp.AppHost/         # 🏠 LOCAL ONLY - Aspire orchestration
+│   ├── MyApp.Api/             # ☁️ DEPLOYED - API application
+│   └── MyApp.ServiceDefaults/ # 📚 SHARED - Configuration
+├── terraform/                 # ☁️ AWS infrastructure
+├── Dockerfile                 # 🐳 Builds ONLY API project
+└── README.md                  # 📖 Instructions
 ```
 
-## 📦 Available Templates
+---
 
-| Template | Description | Status |
-|----------|-------------|--------|
-| `aspire-webapp-aws` | Aspire web app for AWS App Runner | ✅ Available |
-| `aspire-fullstack-aws` | Complete app with all services | 🚧 Coming Soon |
-| `aspire-webapp-gcp` | Aspire web app for Google Cloud Run | 🚧 Coming Soon |
-| `aspire-webapp-azure` | Aspire web app for Azure Container Apps | 🚧 Coming Soon |
+## 📚 **Documentation**
 
-## 🛠️ Template Options
+### 🎯 **Current Guides**
+- [Getting Started](docs/getting-started.md) - How to use the current implementation
+- [Deployment Architecture](docs/deployment-focused-architecture.md) - How Aspire + cloud works
+- [Working Example](examples/working-aws-template/README.md) - Step-by-step AWS deployment
 
-### Core Options
-- `--name, -n`: Project name (required)
-- `--framework, -f`: .NET framework (net9.0, net8.0) - default: net9.0  
-- `--port, -p`: Application port - default: 8080
+### 🏗️ **Reference Documentation**
+- [AWS Deployment Guide](docs/aws-deployment.md) - Complete AWS workflow
+- [Architecture Design](docs/csharp-cli-architecture.md) - Technical decisions
 
-### Database Options
-- `--database`: Database provider (PostgreSQL, MySQL, SqlServer, None) - default: PostgreSQL
+---
 
-### Service Options
-- `--include-cache`: Redis cache - default: true
-- `--include-storage`: S3-compatible storage - default: false
-- `--include-mail`: Email service - default: false
-- `--include-queue`: Message queue - default: false  
-- `--include-jobs`: Background jobs - default: false
-- `--include-worker`: Worker service project - default: false
+## 🔧 **Requirements**
 
-### Convenience Options
-- `--services`: Comma-separated services (cache,storage,mail,queue,jobs,worker,all)
-
-## 🌥️ Service Mapping
-
-NDC automatically maps services between local development and cloud deployment:
-
-### Local Development (Aspire + Docker)
-- **Database**: PostgreSQL/MySQL/SQL Server containers
-- **Cache**: Redis container  
-- **Storage**: MinIO (S3-compatible)
-- **Mail**: MailHog SMTP server
-- **Queue**: RabbitMQ container
-- **Jobs**: Hangfire with in-memory storage
-
-### AWS Cloud Deployment  
-- **Database**: RDS Aurora PostgreSQL/MySQL or RDS SQL Server
-- **Cache**: ElastiCache for Redis
-- **Storage**: Amazon S3
-- **Mail**: Amazon SES  
-- **Queue**: Amazon SQS + EventBridge
-- **Jobs**: Hangfire with database storage
-- **Compute**: AWS App Runner
-
-## ✨ Key Features
-
-### 🎯 **Aspire-First Design**
-- Native .NET Aspire integration
-- Service discovery and orchestration
-- Built-in observability and health checks
-- Seamless local-to-cloud transitions
-
-### 🏗️ **Production-Ready**
-- Optimized multi-stage Dockerfiles
-- Security best practices (non-root containers)
-- Infrastructure as Code with Terraform
-- Auto-scaling and load balancing
-
-### 👨‍💻 **Developer Experience**
-- Full local development environment
-- Hot reload and debugging support
-- Comprehensive documentation
-- IDE integration with IntelliSense
-
-### ☁️ **Multi-Cloud Support**
-- AWS, Google Cloud, and Azure templates
-- Cloud-specific optimizations
-- Consistent developer experience across clouds
-
-## 🚀 Example Usage
-
-### Basic Web Application
-```bash
-ndc create aspire-webapp-aws --name BlogApi --database PostgreSQL
-cd BlogApi
-dotnet run --project src/BlogApi.AppHost
-```
-
-### Full-Stack Application
-```bash
-ndc create aspire-webapp-aws --name ECommerceApp \
-  --database PostgreSQL \
-  --services cache,storage,mail,queue,jobs,worker
-
-cd ECommerceApp
-dotnet run --project src/ECommerceApp.AppHost
-```
-
-### Custom Configuration
-```bash
-ndc create aspire-webapp-aws --name PaymentService \
-  --framework net8.0 \
-  --database SqlServer \
-  --include-cache true \
-  --include-queue true \
-  --port 5000
-```
-
-## 🚀 Deployment
-
-Each generated project includes detailed deployment instructions:
-
-1. **Configure cloud credentials** (AWS CLI, etc.)
-2. **Deploy infrastructure:**
-   ```bash
-   cd terraform
-   terraform init && terraform apply
-   ```
-3. **Build and deploy application:**
-   ```bash
-   # Follow project-specific README.md
-   ```
-
-## 🔧 Advanced Usage
-
-### Using with Visual Studio
-```bash
-ndc create aspire-webapp-aws --name MyApp
-cd MyApp
-start MyApp.sln  # Opens in Visual Studio
-```
-
-### Using dotnet new directly
-```bash
-# After installing templates
-dotnet new aspire-webapp-aws --name MyApp --database PostgreSQL --include-cache true
-```
-
-## 📋 Requirements
-
-- .NET 9.0 SDK or later
-- Docker Desktop
-- Cloud CLI tools (AWS CLI, gcloud, Azure CLI)
+- .NET 9.0 SDK
+- Docker Desktop (for Aspire local development)
+- AWS CLI and credentials (for AWS deployment)
 - Terraform >= 1.0
 
-## 📚 Documentation
+---
 
-- 🎯 [Getting Started](docs/csharp-cli-architecture.md)
-- 🏗️ [Aspire Integration](docs/aspire-architecture.md)  
-- ☁️ [AWS Deployment](docs/aws-deployment.md)
-- 📦 [Template Development](docs/template-development.md)
+## 🤝 **Contributing**
 
-## 🤝 Contributing
+The project demonstrates the complete vision with working AWS implementation. Current development focus:
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md).
+1. **Template Package System**: Publishing to NuGet.org for easy installation
+2. **CLI Completion**: Automated project creation commands
+3. **Multi-Cloud Support**: GCP and Azure template implementations
+4. **Platform Expansion**: Docker, Kubernetes, and PaaS templates
 
 ### Development Setup
 ```bash
 git clone https://github.com/plsft/noundry-cloud-cli.git
-cd noundry-cloud-cli/ndc-csharp
-dotnet restore
-dotnet build
+cd noundry-cloud-cli
+dotnet build NDC.Cli/NDC.Cli.csproj
 ```
 
-### Testing Templates Locally
+### Test Current Implementation
 ```bash
-# Install CLI locally
-dotnet pack NDC.Cli/NDC.Cli.csproj -o packages
-dotnet tool install --global --add-source packages NDC.Cli
-
-# Install templates locally  
-dotnet new install NDC.Templates.Aspire.Aws/
-
-# Test template creation
-ndc create aspire-webapp-aws --name TestApp
+# Try the working example
+cp -r examples/working-aws-template TestApp
+cd TestApp
+dotnet run --project src/MyApp.AppHost
 ```
-
-## 🆚 Why C# Implementation?
-
-The C# implementation offers several advantages over the original Go version:
-
-- **Native .NET Integration**: Uses standard `dotnet new` template system
-- **Aspire-First**: Built specifically for .NET Aspire workflows  
-- **Rich Templating**: Complex conditional logic and parameter validation
-- **IDE Support**: Full IntelliSense and debugging capabilities
-- **Community Familiar**: .NET developers know the patterns
-- **Package Management**: Standard NuGet distribution
-
-## 📞 Support
-
-- 🐛 [Report Issues](https://github.com/plsft/noundry-cloud-cli/issues)
-- 💬 [Discussions](https://github.com/plsft/noundry-cloud-cli/discussions)
-- 📧 [Email Support](mailto:support@noundry.com)
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Built with [System.CommandLine](https://github.com/dotnet/command-line-api)
-- Powered by [.NET Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/)
-- UI enhanced with [Spectre.Console](https://github.com/spectreconsole/spectre.console)
 
 ---
 
-**NDC** - Bringing .NET Aspire to the cloud with production-ready templates and seamless service orchestration.
+## 📞 **Support**
+
+- 🐛 [Report Issues](https://github.com/plsft/noundry-cloud-cli/issues)
+- 💬 [Discussions](https://github.com/plsft/noundry-cloud-cli/discussions)
+
+## 📄 **License**
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+## 🎯 **Vision Demonstrated**
+
+The working AWS example demonstrates the complete NDC vision:
+
+1. **🏠 Amazing Local DX**: `dotnet run --project src/MyApp.AppHost` starts everything
+2. **☁️ Clean Production**: `docker build` creates lightweight API container  
+3. **⚙️ Configuration Magic**: Same code works locally (Aspire) and cloud (managed services)
+4. **🚀 Production Ready**: Complete AWS infrastructure with auto-scaling and security
+
+**Try the working example to see the full potential!**
 
 *Built with ❤️ for the .NET community*
