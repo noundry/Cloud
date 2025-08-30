@@ -24,10 +24,13 @@ public class TemplateService : ITemplateService
     {
         try
         {
+            // Map alias to actual template name
+            var actualTemplate = MapTemplateAlias(templateName);
+            
             var startInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = $"new {templateName} --dry-run",
+                Arguments = $"new {actualTemplate} --dry-run",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -80,6 +83,10 @@ public class TemplateService : ITemplateService
                 configuration.Name, configuration.Template);
 
             var outputPath = Path.Combine(configuration.OutputDirectory, configuration.Name);
+
+            // Map short template names to full template names
+            var actualTemplate = MapTemplateAlias(configuration.Template);
+            configuration.Template = actualTemplate;
 
             // Build dotnet new arguments
             var args = BuildDotnetNewArguments(configuration);
@@ -301,6 +308,21 @@ public class TemplateService : ITemplateService
             args.AddRange(new[] { "--worker", "true" });
 
         return string.Join(" ", args);
+    }
+
+    private string MapTemplateAlias(string templateName)
+    {
+        return templateName switch
+        {
+            "aws" => "webapp-aws",
+            "gcp" => "webapp-gcp", 
+            "azure" => "webapp-azure",
+            "container" => "webapp-container",
+            "aspire-aws" => "webapp-aws",
+            "aspire-gcp" => "webapp-gcp",
+            "aspire-azure" => "webapp-azure",
+            _ => templateName // Return as-is if no mapping
+        };
     }
 
     private async Task PostProcessAspireProject(string projectPath, ProjectConfiguration configuration)

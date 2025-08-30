@@ -46,11 +46,30 @@ cp -r examples/working-gcp-template MyApi      # Google Cloud
 cp -r examples/working-azure-template MyApi    # Azure
 cp -r examples/working-container-template MyApi # Container
 
-# Future CLI command (in development):
-# ndc create aws --name MyApi
+# CLI commands (requires template installation):
+ndc create aws --name MyApi
+ndc create gcp --name MyApi  
+ndc create azure --name MyApi
+ndc create container --name MyApi
 ```
 
-### 1. **Try with Working Examples**
+### 1. **Quick Start with CLI Commands**
+```bash
+git clone https://github.com/plsft/noundry-cloud-cli.git
+cd noundry-cloud-cli
+
+# Install templates (one-time setup)
+dotnet pack NDC.Templates.WebApp/NDC.Templates.WebApp.csproj -o packages/
+dotnet new install packages/NDC.Templates.WebApp.1.0.0.nupkg
+
+# Create projects with any platform
+ndc create aws --name MyApi      # AWS
+ndc create gcp --name MyApi      # Google Cloud
+ndc create azure --name MyApi    # Azure
+ndc create container --name MyApi # Container
+```
+
+### 2. **Try with Working Examples (No installation required)**
 ```bash
 git clone https://github.com/plsft/noundry-cloud-cli.git
 cd noundry-cloud-cli
@@ -295,8 +314,11 @@ cp -r examples/working-gcp-template MyApi     # → Cloud Run + Cloud SQL + Memo
 cp -r examples/working-azure-template MyApi   # → Container Apps + SQL DB + Redis
 cp -r examples/working-container-template MyApi # → Docker/K8s + PostgreSQL + Redis
 
-# Future CLI commands (in development):
-# ndc create aws --name MyApi
+# CLI commands (now working):
+ndc create webapp-aws --name MyApi     # → AWS App Runner + RDS + ElastiCache
+ndc create webapp-gcp --name MyApi     # → Cloud Run + Cloud SQL + Memorystore
+ndc create webapp-azure --name MyApi   # → Container Apps + SQL DB + Redis
+ndc create webapp-container --name MyApi # → Docker/K8s + PostgreSQL + Redis
 ```
 
 ### ⚙️ **Smart Configuration**
