@@ -105,7 +105,7 @@ public class AspireService : IAspireService
             var configJson = JsonSerializer.Serialize(serviceDiscoveryConfig, new JsonSerializerOptions
             {
                 WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.PascalCase
+                PropertyNamingPolicy = null // Use default (PascalCase for C# properties)
             });
 
             await File.WriteAllTextAsync(configPath, configJson);

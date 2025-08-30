@@ -1,0 +1,179 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: Company-WebApplication1-api
+  namespace: default
+  labels:
+    app: Company-WebApplication1-api
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: Company-WebApplication1-api
+  template:
+    metadata:
+      labels:
+        app: Company-WebApplication1-api
+        version: v1
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+      - name: api
+        image: your-registry/company-webapplication1-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080"
+#if (HasDatabase)
+        - name: DATABASE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: database-connection-string
+#endif
+#if (IncludeCache)
+        - name: REDIS_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: redis-connection-string
+#endif
+#if (IncludeStorage)
+        - name: STORAGE_BASE_PATH
+          value: "/app/storage"
+#endif
+#if (IncludeMail)
+        - name: SMTP_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: smtp-host
+        - name: SMTP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: smtp-port
+        - name: SMTP_ENABLE_SSL
+          value: "true"
+        - name: SMTP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: smtp-username
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: smtp-password
+        - name: FROM_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: from-email
+        - name: FROM_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: from-name
+#endif
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 10
+          failureThreshold: 30
+        volumeMounts:
+#if (IncludeStorage)
+        - name: storage
+          mountPath: /app/storage
+#endif
+        - name: tmp
+          mountPath: /tmp
+        - name: logs
+          mountPath: /var/log
+      volumes:
+#if (IncludeStorage)
+      - name: storage
+        persistentVolumeClaim:
+          claimName: storage-pvc
+#endif
+      - name: tmp
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: Company-WebApplication1-api-service
+  namespace: default
+  labels:
+    app: Company-WebApplication1-api
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: Company-WebApplication1-api
+
+#if (IncludeStorage)
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: storage-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+#endif

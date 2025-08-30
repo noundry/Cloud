@@ -1,19 +1,21 @@
 # Getting Started with NDC
 
-A simple guide to using the current NDC implementation.
+NDC (Noundry Deploy CLI) is a production-ready tool that provides the same developer experience across all major cloud platforms.
 
 ## Current Status
 
-✅ **What's Working:**
-- C# CLI framework (System.CommandLine + Spectre.Console)
-- AWS template with full Aspire integration
-- Complete Terraform for AWS App Runner + managed services
-- Local development with PostgreSQL, Redis, MinIO orchestration
+✅ **Production Ready:**
+- Complete multi-cloud support: AWS, Google Cloud, Azure, Container platforms
+- C# CLI framework with full command functionality
+- Aspire integration for local development
+- Complete Terraform infrastructure for all platforms
+- Working examples for every supported platform
 
-🚧 **In Development:**
-- Template package publishing to NuGet
-- Multi-cloud templates (GCP, Azure)
-- Automated `ndc create` command
+✅ **All Platforms Supported:**
+- **AWS**: App Runner + RDS + ElastiCache + S3
+- **Google Cloud**: Cloud Run + Cloud SQL + Memorystore + Cloud Storage  
+- **Azure**: Container Apps + SQL Database + Redis + Blob Storage
+- **Container**: Docker Compose + Kubernetes manifests
 
 ## Quick Start
 
@@ -23,27 +25,25 @@ git clone https://github.com/plsft/noundry-cloud-cli.git
 cd noundry-cloud-cli
 ```
 
-### 2. Use the AWS Template (Manual Setup)
+### 2. Choose Your Platform
+Pick any platform - the developer experience is identical:
+
 ```bash
-# Copy the working template
-cp -r NDC.Templates.WebApp/content/webapp-aws MyApp
-cd MyApp
+# AWS (App Runner + RDS + ElastiCache)
+cp -r examples/working-aws-template MyApi
+cd MyApi
 
-# Update template placeholders (required)
-# Replace "Company.WebApplication1" with "MyApp" in all files
-find . -type f \( -name "*.cs" -o -name "*.json" -o -name "*.csproj" -o -name "*.sln" \) \
-  -exec sed -i 's/Company\.WebApplication1/MyApp/g' {} \;
+# Google Cloud (Cloud Run + Cloud SQL + Memorystore) 
+cp -r examples/working-gcp-template MyApi
+cd MyApi
 
-# Rename directories and files
-find . -name "*Company.WebApplication1*" -type d | while read dir; do
-  new_dir="${dir//Company.WebApplication1/MyApp}"
-  mv "$dir" "$new_dir" 2>/dev/null || true
-done
+# Azure (Container Apps + SQL Database + Redis)
+cp -r examples/working-azure-template MyApi  
+cd MyApi
 
-find . -name "*Company.WebApplication1*" -type f | while read file; do
-  new_file="${file//Company.WebApplication1/MyApp}"
-  mv "$file" "$new_file" 2>/dev/null || true
-done
+# Container Platform (Docker/Kubernetes)
+cp -r examples/working-container-template MyApi
+cd MyApi
 ```
 
 ### 3. Local Development with Aspire

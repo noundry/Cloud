@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: default
+  labels:
+    app: Company-WebApplication1-api
+data:
+  # Application configuration
+  aspnetcore-environment: "Production"
+  
+#if (IncludeMail)
+  # SMTP Configuration (non-sensitive)
+  smtp-host: "smtp.gmail.com"
+  smtp-port: "587"
+  from-email: "noreply@example.com"
+  from-name: "Company WebApplication1"
+#endif
+
+  # Logging configuration
+  logging-level: "Information"
+  
+  # Health check configuration
+  health-check-timeout: "30"
+  
+  # Application settings
+  allowed-hosts: "*"

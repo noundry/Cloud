@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NDC.Cli.Models;
@@ -19,7 +20,7 @@ public class CreateCommand : Command
         // Template argument
         var templateArgument = new Argument<string>(
             name: "template",
-            description: "Template to use (e.g., aspire-webapp-aws)");
+            description: "Template to use (aws, gcp, azure, container, aspire-aws, aspire-gcp, aspire-azure)");
         AddArgument(templateArgument);
         
         // Required options
@@ -107,10 +108,22 @@ public class CreateCommand : Command
         AddOption(workerOption);
         
         // Set handler
-        this.SetHandler(HandleAsync,
-            templateArgument, nameOption, outputOption, frameworkOption, portOption,
-            minInstancesOption, maxInstancesOption, databaseOption, servicesOption,
-            cacheOption, storageOption, mailOption, queueOption, jobsOption, workerOption);
+        this.SetHandler((InvocationContext context) => HandleAsync(
+            context.ParseResult.GetValueForArgument(templateArgument),
+            context.ParseResult.GetValueForOption(nameOption)!,
+            context.ParseResult.GetValueForOption(outputOption)!,
+            context.ParseResult.GetValueForOption(frameworkOption)!,
+            context.ParseResult.GetValueForOption(portOption),
+            context.ParseResult.GetValueForOption(minInstancesOption),
+            context.ParseResult.GetValueForOption(maxInstancesOption),
+            context.ParseResult.GetValueForOption(databaseOption),
+            context.ParseResult.GetValueForOption(servicesOption),
+            context.ParseResult.GetValueForOption(cacheOption),
+            context.ParseResult.GetValueForOption(storageOption),
+            context.ParseResult.GetValueForOption(mailOption),
+            context.ParseResult.GetValueForOption(queueOption),
+            context.ParseResult.GetValueForOption(jobsOption),
+            context.ParseResult.GetValueForOption(workerOption)));
     }
     
     private async Task<int> HandleAsync(
@@ -245,8 +258,9 @@ public class CreateCommand : Command
         }
         
         var cloudProvider = template.Contains("aws") ? "AWS" : 
-                          template.Contains("gcp") ? "GCP" : 
-                          template.Contains("azure") ? "Azure" : "cloud";
+                          template.Contains("gcp") ? "Google Cloud" : 
+                          template.Contains("azure") ? "Azure" : 
+                          template.Contains("container") ? "Container Platform" : "cloud";
         
         AnsiConsole.MarkupLine($"   [dim]# Configure {cloudProvider} credentials[/]");
         AnsiConsole.MarkupLine("   cd terraform");

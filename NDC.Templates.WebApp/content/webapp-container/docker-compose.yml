@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # Your .NET API
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - DATABASE_CONNECTION_STRING=Host=postgres;Database=Company_WebApplication1_db;Username=postgres;Password=postgres;Port=5432
+#if (IncludeCache)
+      - REDIS_CONNECTION_STRING=redis:6379
+#endif
+#if (IncludeStorage)
+      - STORAGE_BASE_PATH=/app/storage
+#endif
+#if (IncludeMail)
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_ENABLE_SSL=${SMTP_ENABLE_SSL:-true}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - FROM_EMAIL=${FROM_EMAIL:-noreply@example.com}
+      - FROM_NAME=${FROM_NAME:-Company WebApplication1}
+#endif
+    depends_on:
+#if (HasDatabase)
+      - postgres
+#endif
+#if (IncludeCache)
+      - redis
+#endif
+    volumes:
+#if (IncludeStorage)
+      - ./storage:/app/storage
+#endif
+      - /var/log/api:/var/log
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+#if (HasDatabase)
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=Company_WebApplication1_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+#endif
+
+#if (IncludeCache)
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+#endif
+
+  # Nginx Reverse Proxy (optional)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+#if (HasDatabase)
+  postgres_data:
+#endif
+#if (IncludeCache)
+  redis_data:
+#endif

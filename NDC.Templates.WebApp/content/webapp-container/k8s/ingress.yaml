@@ -1,0 +1,102 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: Company-WebApplication1-api-ingress
+  namespace: default
+  labels:
+    app: Company-WebApplication1-api
+  annotations:
+    # Use appropriate ingress controller annotations
+    # For NGINX Ingress Controller:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    
+    # For Traefik:
+    # traefik.ingress.kubernetes.io/redirect-entry-point: https
+    
+    # For cert-manager (automatic SSL):
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # For cloud providers:
+    # AWS ALB:
+    # kubernetes.io/ingress.class: alb
+    # alb.ingress.kubernetes.io/scheme: internet-facing
+    # alb.ingress.kubernetes.io/target-type: ip
+    
+    # GCP:
+    # kubernetes.io/ingress.class: "gce"
+    # kubernetes.io/ingress.global-static-ip-name: "web-static-ip"
+    
+    # Azure:
+    # kubernetes.io/ingress.class: azure/application-gateway
+spec:
+  ingressClassName: nginx # Change based on your ingress controller
+  
+  # TLS configuration (uncomment when using SSL)
+  # tls:
+  # - hosts:
+  #   - your-domain.com
+  #   secretName: tls-secret
+  
+  rules:
+  - host: your-domain.com # Replace with your domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: Company-WebApplication1-api-service
+            port:
+              number: 80
+      
+      # Health check path (can be exposed separately)
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: Company-WebApplication1-api-service
+            port:
+              number: 80
+
+---
+# Optional: Certificate for HTTPS (using cert-manager)
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: tls-certificate
+#   namespace: default
+# spec:
+#   secretName: tls-secret
+#   issuerRef:
+#     name: letsencrypt-prod
+#     kind: ClusterIssuer
+#   dnsNames:
+#   - your-domain.com
+
+# For local development/testing without domain:
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: Company-WebApplication1-api-local-ingress
+  namespace: default
+  labels:
+    app: Company-WebApplication1-api
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: Company-WebApplication1-api-service
+            port:
+              number: 80
