@@ -69,14 +69,11 @@ public class ListCommand : Command
             
             // Show usage examples
             AnsiConsole.MarkupLine("[yellow]Usage Examples:[/]");
-            AnsiConsole.MarkupLine("  [dim]# Create a simple web app[/]");
-            AnsiConsole.MarkupLine("  ndc create dotnet-webapp-aws --name my-api");
+            AnsiConsole.MarkupLine("  [dim]# Use working examples (current)[/]");
+            AnsiConsole.MarkupLine("  cp -r examples/working-aws-template my-api");
             AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine("  [dim]# Create an Aspire app with services[/]");
-            AnsiConsole.MarkupLine("  ndc create aspire-webapp-aws --name my-app --services database,cache,storage");
-            AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine("  [dim]# Create a full-stack application[/]");
-            AnsiConsole.MarkupLine("  ndc create aspire-fullstack-gcp --name my-project --database PostgreSQL --worker");
+            AnsiConsole.MarkupLine("  [dim]# Future CLI commands[/]");
+            AnsiConsole.MarkupLine("  ndc create webapp-aws --name my-app --services database,cache,storage");
             
             if (!showAll)
             {

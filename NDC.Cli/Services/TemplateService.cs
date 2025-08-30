@@ -193,7 +193,7 @@ public class TemplateService : ITemplateService
         
         foreach (var line in lines)
         {
-            if (line.Contains("aspire-webapp-") || line.Contains("aspire-fullstack-") || line.Contains("dotnet-webapp-"))
+            if (line.Contains("webapp-"))
             {
                 var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length >= 2)
@@ -242,15 +242,10 @@ public class TemplateService : ITemplateService
     {
         return shortName switch
         {
-            "dotnet-webapp-aws" => "Simple .NET web application for AWS App Runner",
-            "dotnet-webapp-gcp" => "Simple .NET web application for Google Cloud Run",
-            "dotnet-webapp-azure" => "Simple .NET web application for Azure Container Apps",
-            "aspire-webapp-aws" => "Aspire web application with service discovery for AWS",
-            "aspire-webapp-gcp" => "Aspire web application with service discovery for Google Cloud",
-            "aspire-webapp-azure" => "Aspire web application with service discovery for Azure",
-            "aspire-fullstack-aws" => "Complete Aspire application with all services for AWS",
-            "aspire-fullstack-gcp" => "Complete Aspire application with all services for Google Cloud",
-            "aspire-fullstack-azure" => "Complete Aspire application with all services for Azure",
+            "webapp-aws" => "Multi-cloud web application for AWS (App Runner + RDS + ElastiCache)",
+            "webapp-gcp" => "Multi-cloud web application for Google Cloud (Cloud Run + Cloud SQL + Memorystore)",
+            "webapp-azure" => "Multi-cloud web application for Azure (Container Apps + SQL Database + Redis)",
+            "webapp-container" => "Multi-cloud web application for containers (Docker Compose + Kubernetes)",
             _ => "Cloud-native .NET application template"
         };
     }

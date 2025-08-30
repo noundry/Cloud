@@ -32,7 +32,7 @@ Your user needs these roles:
 
 ### 1. Create Project
 ```bash
-ndc create dotnet-webapp-gcp --name my-api
+cp -r examples/working-gcp-template my-api
 cd my-api
 ```
 

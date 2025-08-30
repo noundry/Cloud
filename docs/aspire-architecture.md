@@ -149,17 +149,17 @@ my-aspire-project/
 ## New CLI Commands
 
 ```bash
-# Create Aspire-enabled projects
-ndc create aspire-webapp-aws --name my-app --services database,cache,storage,mail,queue,jobs
+# Use working examples (current approach)
+cp -r examples/working-aws-template my-app
+cp -r examples/working-gcp-template my-app
+cp -r examples/working-azure-template my-app
+cp -r examples/working-container-template my-app
 
-# Create with specific database
-ndc create aspire-webapp-gcp --name my-app --database postgresql --cache redis --storage s3
+# Future CLI commands:
+# ndc create webapp-aws --name my-app --services database,cache,storage
 
-# Create minimal API with just database
-ndc create aspire-api-azure --name my-api --services database
-
-# Create full-stack with worker
-ndc create aspire-fullstack-aws --name my-app --services all --worker
+# Future: Create with all services
+# ndc create webapp-aws --name my-app --services all --worker
 ```
 
 ## Service Options

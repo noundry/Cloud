@@ -65,11 +65,11 @@ cd noundry-cloud-cli
 # List available templates
 ndc list
 
-# Create projects using .NET template engine
-ndc create aspire-webapp-aws --name MyApp --services database,cache,storage
+# Use working examples (current approach)
+cp -r examples/working-aws-template MyApp
 
-# Or use dotnet new directly (once templates are installed)
-dotnet new aspire-webapp-aws --name MyApp --database PostgreSQL --include-cache true
+# Future CLI commands:
+# ndc create webapp-aws --name MyApp --services database,cache,storage
 ```
 
 ## Template Parameters
@@ -161,20 +161,11 @@ resource "aws_s3_bucket" "storage" {
 
 ## Template Categories
 
-### Simple Templates
-- `dotnet-webapp-aws` - Basic .NET web app
-- `dotnet-webapp-gcp` - Basic .NET web app
-- `dotnet-webapp-azure` - Basic .NET web app
-
-### Aspire Templates
-- `aspire-webapp-aws` - Aspire web app with service discovery
-- `aspire-webapp-gcp` - Aspire web app with service discovery
-- `aspire-webapp-azure` - Aspire web app with service discovery
-
-### Full-Stack Templates
-- `aspire-fullstack-aws` - Complete application with all services
-- `aspire-fullstack-gcp` - Complete application with all services
-- `aspire-fullstack-azure` - Complete application with all services
+### Multi-Cloud Web App Templates
+- `webapp-aws` - Aspire web app for AWS (App Runner + RDS + ElastiCache)
+- `webapp-gcp` - Aspire web app for Google Cloud (Cloud Run + Cloud SQL + Memorystore)
+- `webapp-azure` - Aspire web app for Azure (Container Apps + SQL Database + Redis)
+- `webapp-container` - Aspire web app for containers (Docker Compose + Kubernetes)
 
 ## Implementation Plan
 

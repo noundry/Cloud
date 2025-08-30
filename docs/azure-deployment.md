@@ -31,7 +31,7 @@ Your user needs these roles:
 
 ### 1. Create Project
 ```bash
-ndc create dotnet-webapp-azure --name my-api
+cp -r examples/working-azure-template my-api
 cd my-api
 ```
 

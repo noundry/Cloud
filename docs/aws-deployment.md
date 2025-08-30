@@ -34,7 +34,7 @@ Your AWS user/role needs these permissions:
 
 ### 1. Create Project
 ```bash
-ndc create dotnet-webapp-aws --name my-api
+cp -r examples/working-aws-template my-api
 cd my-api
 ```
 
