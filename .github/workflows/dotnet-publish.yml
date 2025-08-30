@@ -32,8 +32,8 @@ jobs:
         dotnet pack NDC.Cli/NDC.Cli.csproj --no-build --configuration Release --output ./packages
         dotnet tool install --global --add-source ./packages NDC.Cli
         
-        # Install template packages
-        dotnet new install NDC.Templates.Aspire.Aws/
+        # Template packages are now in working examples
+        # No template installation needed
         
         # Test template creation
         mkdir -p test-output
@@ -78,7 +78,7 @@ jobs:
     strategy:
       matrix:
         template: 
-          - NDC.Templates.Aspire.Aws
+          - NDC.Templates.WebApp
     steps:
     - uses: actions/checkout@v4
     
@@ -126,8 +126,9 @@ jobs:
           # Install CLI tool
           dotnet tool install --global NDC.Cli
           
-          # Install AWS template package
-          dotnet new install NDC.Templates.Aspire.Aws
+          # Use working examples
+          git clone https://github.com/plsft/noundry-cloud-cli.git
+          cd noundry-cloud-cli
           ```
           
           #### 🛠️ Usage

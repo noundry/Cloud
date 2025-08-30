@@ -95,10 +95,7 @@ public class NuGetService : INuGetService
             // In a real implementation, this would search NuGet.org
             var knownPackages = new[]
             {
-                "NDC.Templates.Simple",
-                "NDC.Templates.Aspire.Aws",
-                "NDC.Templates.Aspire.Gcp",
-                "NDC.Templates.Aspire.Azure"
+                "NDC.Templates.WebApp"
             };
 
             var templates = new List<TemplateInfo>();
@@ -197,10 +194,7 @@ public class NuGetService : INuGetService
         // Map package names to their templates
         var packageTemplates = packageName switch
         {
-            "NDC.Templates.Simple" => new[] { "dotnet-webapp-aws", "dotnet-webapp-gcp", "dotnet-webapp-azure" },
-            "NDC.Templates.Aspire.Aws" => new[] { "aspire-webapp-aws", "aspire-fullstack-aws" },
-            "NDC.Templates.Aspire.Gcp" => new[] { "aspire-webapp-gcp", "aspire-fullstack-gcp" },
-            "NDC.Templates.Aspire.Azure" => new[] { "aspire-webapp-azure", "aspire-fullstack-azure" },
+            "NDC.Templates.WebApp" => new[] { "webapp-aws", "webapp-gcp", "webapp-azure", "webapp-container" },
             _ => Array.Empty<string>()
         };
 
@@ -212,10 +206,7 @@ public class NuGetService : INuGetService
     {
         return packageName switch
         {
-            "NDC.Templates.Simple" => "NDC Simple Templates",
-            "NDC.Templates.Aspire.Aws" => "NDC Aspire Templates for AWS",
-            "NDC.Templates.Aspire.Gcp" => "NDC Aspire Templates for Google Cloud",
-            "NDC.Templates.Aspire.Azure" => "NDC Aspire Templates for Azure",
+            "NDC.Templates.WebApp" => "NDC Multi-Cloud Web App Templates",
             _ => packageName
         };
     }
@@ -224,10 +215,7 @@ public class NuGetService : INuGetService
     {
         return packageName switch
         {
-            "NDC.Templates.Simple" => "dotnet-webapp-*",
-            "NDC.Templates.Aspire.Aws" => "aspire-*-aws",
-            "NDC.Templates.Aspire.Gcp" => "aspire-*-gcp",
-            "NDC.Templates.Aspire.Azure" => "aspire-*-azure",
+            "NDC.Templates.WebApp" => "webapp-*",
             _ => packageName
         };
     }
@@ -236,10 +224,7 @@ public class NuGetService : INuGetService
     {
         return packageName switch
         {
-            "NDC.Templates.Simple" => "Simple .NET web application templates for all clouds",
-            "NDC.Templates.Aspire.Aws" => "Aspire-enabled templates for AWS deployment",
-            "NDC.Templates.Aspire.Gcp" => "Aspire-enabled templates for Google Cloud deployment",
-            "NDC.Templates.Aspire.Azure" => "Aspire-enabled templates for Azure deployment",
+            "NDC.Templates.WebApp" => "Multi-cloud web application templates with Aspire local development",
             _ => "NDC template package"
         };
     }

@@ -23,11 +23,12 @@ NDC.Cli/                           # Main CLI tool
 │   └── CloudService.cs           # Cloud provider services
 └── NDC.Cli.csproj                # Tool project file
 
-NDC.Templates/                     # Template packages
-├── NDC.Templates.Aspire.Aws/     # AWS Aspire templates
-├── NDC.Templates.Aspire.Gcp/     # GCP Aspire templates
-├── NDC.Templates.Aspire.Azure/   # Azure Aspire templates
-└── NDC.Templates.Simple/         # Simple webapp templates
+NDC.Templates.WebApp/             # Multi-cloud template package
+└── content/                      # Template content
+    ├── webapp-aws/               # AWS App Runner templates
+    ├── webapp-gcp/               # Google Cloud Run templates  
+    ├── webapp-azure/             # Azure Container Apps templates
+    └── webapp-container/         # Docker/Kubernetes templates
 ```
 
 ## .NET Template Structure
@@ -51,10 +52,12 @@ content/                           # Template files
 # Install the CLI tool
 dotnet tool install --global NDC.Cli
 
-# Install template packages
-ndc install NDC.Templates.Aspire.Aws
-ndc install NDC.Templates.Aspire.Gcp
-ndc install NDC.Templates.Aspire.Azure
+# Use working examples (current approach)
+git clone https://github.com/plsft/noundry-cloud-cli.git
+cd noundry-cloud-cli
+
+# Future: Install template packages
+# ndc install NDC.Templates.WebApp
 ```
 
 ### Usage
@@ -76,9 +79,9 @@ Templates support rich parameter configuration:
 {
   "author": "Noundry",
   "classifications": ["Web", "Cloud", "Aspire"],
-  "identity": "NDC.Templates.Aspire.Aws",
-  "name": "Aspire Web App for AWS",
-  "shortName": "aspire-webapp-aws",
+  "identity": "NDC.Templates.WebApp",
+  "name": "Multi-Cloud Web App",
+  "shortName": "webapp-aws",
   "tags": {
     "language": "C#",
     "type": "project"

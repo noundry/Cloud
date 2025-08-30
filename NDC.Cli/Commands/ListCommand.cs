@@ -38,7 +38,7 @@ public class ListCommand : Command
             if (!templates.Any())
             {
                 AnsiConsole.MarkupLine("[yellow]No templates found. Use 'ndc install' to install template packages.[/]");
-                AnsiConsole.MarkupLine("[dim]Example: ndc install NDC.Templates.Aspire.Aws[/]");
+                AnsiConsole.MarkupLine("[dim]Example: ndc install NDC.Templates.WebApp[/]");
                 return 0;
             }
             

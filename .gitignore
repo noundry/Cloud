@@ -1,19 +1,21 @@
-# Compiled binaries
-noundry
-noundry.exe
+# .NET build outputs
+bin/
+obj/
 dist/
-build/
+packages/
 
-# Go build cache
+# Compiled binaries
+*.dll
+*.exe
+*.pdb
 *.so
 *.dylib
-*.dll
 *.test
 *.out
 
-# Go modules cache
-go.mod.local
-go.sum.local
+# NuGet
+*.nupkg
+*.snupkg
 
 # IDE files
 .vscode/
@@ -48,3 +50,6 @@ coverage.out
 .env
 .env.local
 .env.*.local
+
+# Claude Code local settings
+.claude/

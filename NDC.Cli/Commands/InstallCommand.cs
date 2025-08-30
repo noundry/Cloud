@@ -17,7 +17,7 @@ public class InstallCommand : Command
         
         var packageArgument = new Argument<string>(
             name: "package",
-            description: "Template package to install (e.g., NDC.Templates.Aspire.Aws)");
+            description: "Template package to install (e.g., NDC.Templates.WebApp)");
         AddArgument(packageArgument);
         
         var versionOption = new Option<string>(
