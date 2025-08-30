@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Noundry",
+  "classifications": ["Web", "Cloud", "GCP", "Aspire"],
+  "identity": "NDC.Templates.WebApp.GCP",
+  "name": "NDC Web App for Google Cloud",
+  "shortName": "webapp-gcp",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "MyApp",
+  "preferNameDirectory": true,
+  "symbols": {
+    "name": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "WebApp1",
+      "replaces": "MyApp",
+      "fileRename": "MyApp"
+    },
+    "framework": {
+      "type": "parameter", 
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net9.0"
+        },
+        {
+          "choice": "net8.0"
+        }
+      ],
+      "defaultValue": "net9.0",
+      "description": "Target framework"
+    },
+    "database": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Include Cloud SQL PostgreSQL support"
+    },
+    "cache": {
+      "type": "parameter",
+      "datatype": "bool", 
+      "defaultValue": "true",
+      "description": "Include Memorystore Redis support"
+    },
+    "storage": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true", 
+      "description": "Include Cloud Storage support"
+    },
+    "mail": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Include email service support"
+    },
+    "queue": {
+      "type": "parameter", 
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Include Pub/Sub support"
+    },
+    "jobs": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false", 
+      "description": "Include background jobs"
+    },
+    "worker": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Include worker service"
+    }
+  }
+}

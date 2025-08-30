@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <PackageType>Template</PackageType>
+    <PackageVersion>1.0.0</PackageVersion>
+    <PackageId>NDC.Templates.WebApp</PackageId>
+    <Title>NDC Multi-Cloud Web App Templates</Title>
+    <Authors>Noundry</Authors>
+    <Description>Multi-cloud .NET web application templates with Aspire local development support for AWS, Google Cloud, Azure, and container platforms</Description>
+    <PackageTags>dotnet-new;templates;aspire;aws;gcp;azure;docker;kubernetes;cloud;microservices</PackageTags>
+    <PackageProjectUrl>https://github.com/plsft/noundry-cloud-cli</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/plsft/noundry-cloud-cli</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="content/**" Exclude="content/**/bin/**;content/**/obj/**" />
+    <None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+</Project>

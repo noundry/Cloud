@@ -265,6 +265,7 @@ public class TemplateService : ITemplateService
             "new",
             config.Template,
             "--name", config.Name,
+            "--param:name", config.Name, // Internal template parameter for name replacement
             "--framework", config.Framework,
             "--force" // Overwrite existing files if they exist
         };
@@ -282,22 +283,22 @@ public class TemplateService : ITemplateService
 
         // Add service flags
         if (config.Services.IncludeCache)
-            args.AddRange(new[] { "--include-cache", "true" });
+            args.AddRange(new[] { "--cache", "true" });
         
         if (config.Services.IncludeStorage)
-            args.AddRange(new[] { "--include-storage", "true" });
+            args.AddRange(new[] { "--storage", "true" });
         
         if (config.Services.IncludeMail)
-            args.AddRange(new[] { "--include-mail", "true" });
+            args.AddRange(new[] { "--mail", "true" });
         
         if (config.Services.IncludeMessageQueue)
-            args.AddRange(new[] { "--include-queue", "true" });
+            args.AddRange(new[] { "--queue", "true" });
         
         if (config.Services.IncludeJobs)
-            args.AddRange(new[] { "--include-jobs", "true" });
+            args.AddRange(new[] { "--jobs", "true" });
         
         if (config.Services.IncludeWorker)
-            args.AddRange(new[] { "--include-worker", "true" });
+            args.AddRange(new[] { "--worker", "true" });
 
         return string.Join(" ", args);
     }

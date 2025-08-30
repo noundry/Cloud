@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Noundry",
+  "classifications": ["Web", "Cloud", "Azure", "Aspire"],
+  "identity": "NDC.Templates.WebApp.Azure",
+  "name": "NDC Web App for Azure",
+  "shortName": "webapp-azure",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "MyApp",
+  "preferNameDirectory": true,
+  "symbols": {
+    "name": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "WebApp1",
+      "replaces": "MyApp",
+      "fileRename": "MyApp"
+    },
+    "framework": {
+      "type": "parameter", 
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net9.0"
+        },
+        {
+          "choice": "net8.0"
+        }
+      ],
+      "defaultValue": "net9.0",
+      "description": "Target framework"
+    },
+    "database": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Include SQL Database support"
+    },
+    "cache": {
+      "type": "parameter",
+      "datatype": "bool", 
+      "defaultValue": "true",
+      "description": "Include Redis Cache support"
+    },
+    "storage": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true", 
+      "description": "Include Blob Storage support"
+    },
+    "mail": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Include email service support"
+    },
+    "queue": {
+      "type": "parameter", 
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Include Service Bus support"
+    },
+    "jobs": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false", 
+      "description": "Include background jobs"
+    },
+    "worker": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Include worker service"
+    }
+  }
+}

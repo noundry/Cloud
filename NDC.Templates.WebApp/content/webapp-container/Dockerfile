@@ -2,48 +2,53 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copy csproj files and restore dependencies
-COPY ["src/Company.WebApplication1.Api/Company.WebApplication1.Api.csproj", "src/Company.WebApplication1.Api/"]
-RUN dotnet restore "src/Company.WebApplication1.Api/Company.WebApplication1.Api.csproj"
+# Copy project files and restore dependencies
+COPY src/MyApp.Api/*.csproj ./MyApp.Api/
+COPY src/MyApp.ServiceDefaults/*.csproj ./MyApp.ServiceDefaults/
 
-# Copy source code and build
-COPY . .
-WORKDIR "/src/src/Company.WebApplication1.Api"
-RUN dotnet build "Company.WebApplication1.Api.csproj" -c Release -o /app/build
+# Restore dependencies
+RUN dotnet restore MyApp.Api/MyApp.Api.csproj
 
-# Publish stage
-FROM build AS publish
-RUN dotnet publish "Company.WebApplication1.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+# Copy source code
+COPY src/MyApp.Api/ ./MyApp.Api/
+COPY src/MyApp.ServiceDefaults/ ./MyApp.ServiceDefaults/
+
+# Build and publish the API project only (not AppHost)
+RUN dotnet publish MyApp.Api/MyApp.Api.csproj \
+    -c Release \
+    -o /app/publish \
+    -p:PublishReadyToRun=true \
+    -p:PublishSingleFile=true \
+    -p:InvariantGlobalization=true \
+    -p:TieredPGO=true \
+    --self-contained=false
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-# Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
 # Create non-root user
-RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+RUN groupadd -r appuser && useradd -r -g appuser -u 10001 appuser
 
-# Create directories with proper permissions
-RUN mkdir -p /app/storage /var/log && chown -R appuser:appgroup /app /var/log
+# Set environment variables for production
+ENV ASPNETCORE_ENVIRONMENT=Production \
+    ASPNETCORE_URLS=http://+:8080 \
+    DOTNET_EnableDiagnostics=0
 
 # Copy published application
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 
-# Change ownership to non-root user
-RUN chown -R appuser:appgroup /app
-USER appuser
+# Change ownership to appuser
+RUN chown -R appuser:appuser /app
 
-# Expose port
-EXPOSE 8080
-
-# Set environment variables
-ENV ASPNETCORE_URLS=http://+:8080
-ENV ASPNETCORE_ENVIRONMENT=Production
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+# Health check for container orchestrators
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
-ENTRYPOINT ["dotnet", "Company.WebApplication1.Api.dll"]
+EXPOSE 8080
+
+# Switch to non-root user
+USER appuser
+
+# Start the application
+ENTRYPOINT ["dotnet", "MyApp.Api.dll"]
