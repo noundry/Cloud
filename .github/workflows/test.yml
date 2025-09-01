@@ -1,0 +1,173 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'examples/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'examples/**'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore ndc-csharp.sln
+
+    - name: Build solution
+      run: dotnet build ndc-csharp.sln --no-restore --configuration Release
+
+    - name: Run unit tests
+      run: dotnet test tests/NDC.Cli.Tests/NDC.Cli.Tests.csproj --no-build --configuration Release --verbosity normal --logger trx --results-directory TestResults --collect:"XPlat Code Coverage"
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.os }}
+        path: TestResults/**/*.trx
+
+    - name: Upload code coverage
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: code-coverage
+        path: TestResults/**/coverage.cobertura.xml
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Build CLI tool
+      run: dotnet build src/NDC.Cli/NDC.Cli.csproj --configuration Release
+
+    - name: Pack CLI tool for testing
+      run: dotnet pack src/NDC.Cli/NDC.Cli.csproj --no-build --configuration Release --output ./test-packages
+
+    - name: Install CLI tool globally
+      run: dotnet tool install --global --add-source ./test-packages NDC.Cli
+
+    - name: Test CLI tool installation
+      run: ndc --help
+
+    - name: Test template creation (using examples)
+      run: |
+        mkdir -p integration-test
+        cd integration-test
+        
+        # Test copying working examples (current approach)
+        cp -r ../examples/working-aws-template TestAws
+        cp -r ../examples/working-gcp-template TestGcp
+        cp -r ../examples/working-azure-template TestAzure
+        cp -r ../examples/working-container-template TestContainer
+        
+        # Verify structure exists
+        [ -f TestAws/MyApp.sln ] || exit 1
+        [ -f TestGcp/MyApp.sln ] || exit 1
+        [ -f TestAzure/MyApp.sln ] || exit 1
+        [ -f TestContainer/MyApp.sln ] || exit 1
+        
+        echo "✅ All working examples copied successfully"
+
+    - name: Test example project build
+      run: |
+        cd integration-test/TestAws
+        dotnet restore MyApp.sln
+        dotnet build MyApp.sln --no-restore --configuration Release
+        echo "✅ AWS example builds successfully"
+
+  publish-test-results:
+    name: Publish Test Results
+    runs-on: ubuntu-latest
+    needs: [test, integration-test]
+    if: always()
+
+    steps:
+    - name: Download test results
+      uses: actions/download-artifact@v4
+      with:
+        pattern: test-results-*
+        path: test-results
+        merge-multiple: true
+
+    - name: Publish test results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Test Results
+        path: 'test-results/**/*.trx'
+        reporter: dotnet-trx
+        fail-on-error: false
+
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Run code analysis
+      run: dotnet build ndc-csharp.sln --configuration Release --verbosity normal /p:TreatWarningsAsErrors=true
+
+    - name: Run format check
+      run: dotnet format ndc-csharp.sln --verify-no-changes --verbosity diagnostic
+
+    - name: Security scan
+      uses: securecodewarrior/github-action-add-sarif@v1
+      if: github.event_name == 'push'
+      with:
+        sarif-file: 'security-scan-results.sarif'
+      continue-on-error: true

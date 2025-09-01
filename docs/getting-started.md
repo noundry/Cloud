@@ -21,7 +21,7 @@ NDC (Noundry Deploy CLI) is a production-ready tool that provides the same devel
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/plsft/noundry-cloud-cli.git
+git clone https://github.com/Noundry/Cloud.git
 cd noundry-cloud-cli
 ```
 

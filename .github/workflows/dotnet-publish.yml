@@ -21,30 +21,38 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     
     - name: Restore dependencies
-      run: dotnet restore NDC.Cli/NDC.Cli.csproj
+      run: dotnet restore ndc-csharp.sln
     
-    - name: Build
-      run: dotnet build NDC.Cli/NDC.Cli.csproj --no-restore --configuration Release
+    - name: Build solution
+      run: dotnet build ndc-csharp.sln --no-restore --configuration Release
     
-    - name: Test template generation
+    - name: Run unit tests
+      run: dotnet test tests/NDC.Cli.Tests/NDC.Cli.Tests.csproj --no-build --configuration Release --verbosity normal
+    
+    - name: Test CLI tool functionality
       run: |
         # Install the CLI tool locally
-        dotnet pack NDC.Cli/NDC.Cli.csproj --no-build --configuration Release --output ./packages
+        dotnet pack src/NDC.Cli/NDC.Cli.csproj --no-build --configuration Release --output ./packages
         dotnet tool install --global --add-source ./packages NDC.Cli
         
-        # Template packages are now in working examples
-        # No template installation needed
+        # Test CLI help command
+        ndc --help
         
-        # Test template creation
+        # Test template creation using working examples
         mkdir -p test-output
         cd test-output
         
-        # Test basic template (using working example)
-        cp -r examples/working-aws-template TestApp
+        # Test basic template copying (current approach)
+        cp -r ../examples/working-aws-template TestApp
         
         # Verify template files exist
         [ -f TestApp/MyApp.sln ] || exit 1
         [ -f TestApp/src/MyApp.AppHost/MyApp.AppHost.csproj ] || exit 1
+        
+        # Test building the generated project
+        cd TestApp
+        dotnet restore MyApp.sln
+        dotnet build MyApp.sln --no-restore --configuration Release
 
   publish-cli:
     needs: test
@@ -63,10 +71,10 @@ jobs:
     
     - name: Update version in CLI project
       run: |
-        sed -i "s/<PackageVersion>.*<\/PackageVersion>/<PackageVersion>${{ steps.version.outputs.VERSION }}<\/PackageVersion>/" NDC.Cli/NDC.Cli.csproj
+        sed -i "s/<PackageVersion>.*<\/PackageVersion>/<PackageVersion>${{ steps.version.outputs.VERSION }}<\/PackageVersion>/" src/NDC.Cli/NDC.Cli.csproj
     
     - name: Pack CLI tool
-      run: dotnet pack NDC.Cli/NDC.Cli.csproj --configuration Release --output ./packages -p:PackageVersion=${{ steps.version.outputs.VERSION }}
+      run: dotnet pack src/NDC.Cli/NDC.Cli.csproj --configuration Release --output ./packages -p:PackageVersion=${{ steps.version.outputs.VERSION }}
     
     - name: Publish CLI to NuGet
       run: dotnet nuget push ./packages/NDC.Cli.${{ steps.version.outputs.VERSION }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
@@ -93,10 +101,10 @@ jobs:
     
     - name: Update version in template project
       run: |
-        sed -i "s/<PackageVersion>.*<\/PackageVersion>/<PackageVersion>${{ steps.version.outputs.VERSION }}<\/PackageVersion>/" ${{ matrix.template }}/${{ matrix.template }}.csproj
+        sed -i "s/<PackageVersion>.*<\/PackageVersion>/<PackageVersion>${{ steps.version.outputs.VERSION }}<\/PackageVersion>/" src/${{ matrix.template }}/${{ matrix.template }}.csproj
     
     - name: Pack template package
-      run: dotnet pack ${{ matrix.template }}/${{ matrix.template }}.csproj --configuration Release --output ./packages -p:PackageVersion=${{ steps.version.outputs.VERSION }}
+      run: dotnet pack src/${{ matrix.template }}/${{ matrix.template }}.csproj --configuration Release --output ./packages -p:PackageVersion=${{ steps.version.outputs.VERSION }}
     
     - name: Publish templates to NuGet
       run: dotnet nuget push ./packages/${{ matrix.template }}.${{ steps.version.outputs.VERSION }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

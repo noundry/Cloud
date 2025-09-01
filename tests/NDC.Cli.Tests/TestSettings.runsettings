@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <MaxCpuCount>0</MaxCpuCount>
+    <ResultsDirectory>.\TestResults</ResultsDirectory>
+    <TestSessionTimeout>300000</TestSessionTimeout>
+  </RunConfiguration>
+  
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <IncludeDirectory>../../src/NDC.Cli/</IncludeDirectory>
+          <ExcludeByFile>**/bin/**,**/obj/**</ExcludeByFile>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+  
+  <NUnit>
+    <NumberOfTestWorkers>auto</NumberOfTestWorkers>
+    <DefaultTestNamePattern>{m}</DefaultTestNamePattern>
+    <TestOutputXml>.\TestResults</TestOutputXml>
+  </NUnit>
+</RunSettings>

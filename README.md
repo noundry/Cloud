@@ -4,8 +4,8 @@
 
 A .NET CLI tool that uses **Aspire for local development** and deploys **only your API** to any cloud platform with the same developer experience.
 
-[![Release](https://img.shields.io/github/v/release/plsft/noundry-cloud-cli)](https://github.com/plsft/noundry-cloud-cli/releases)
-[![License](https://img.shields.io/github/license/plsft/noundry-cloud-cli)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Noundry/Cloud)](https://github.com/Noundry/Cloud/releases)
+[![License](https://img.shields.io/github/license/Noundry/Cloud)](LICENSE)
 
 **Status**: ✅ **Production Ready** - All major cloud platforms supported
 
@@ -37,7 +37,7 @@ A .NET CLI tool that uses **Aspire for local development** and deploys **only yo
 
 ```bash
 # Use working examples (current approach)
-git clone https://github.com/plsft/noundry-cloud-cli.git
+git clone https://github.com/Noundry/Cloud.git
 cd noundry-cloud-cli
 
 # Choose your platform:
@@ -55,11 +55,11 @@ ndc create container --name MyApi
 
 ### 1. **Quick Start with CLI Commands**
 ```bash
-git clone https://github.com/plsft/noundry-cloud-cli.git
+git clone https://github.com/Noundry/Cloud.git
 cd noundry-cloud-cli
 
 # Install templates (one-time setup)
-dotnet pack NDC.Templates.WebApp/NDC.Templates.WebApp.csproj -o packages/
+dotnet pack src/NDC.Templates.WebApp/NDC.Templates.WebApp.csproj -o packages/
 dotnet new install packages/NDC.Templates.WebApp.1.0.0.nupkg
 
 # Create projects with any platform
@@ -71,7 +71,7 @@ ndc create container --name MyApi # Container
 
 ### 2. **Try with Working Examples (No installation required)**
 ```bash
-git clone https://github.com/plsft/noundry-cloud-cli.git
+git clone https://github.com/Noundry/Cloud.git
 cd noundry-cloud-cli
 
 # Choose your platform:
@@ -265,9 +265,9 @@ NDC provides production-ready templates for all major platforms:
 
 ### Development Setup
 ```bash
-git clone https://github.com/plsft/noundry-cloud-cli.git
+git clone https://github.com/Noundry/Cloud.git
 cd noundry-cloud-cli
-dotnet build NDC.Cli/NDC.Cli.csproj
+dotnet build src/NDC.Cli/NDC.Cli.csproj
 ```
 
 ### Test All Platforms
@@ -287,8 +287,8 @@ cp -r examples/working-container-template TestContainer
 
 ## 📞 **Support**
 
-- 🐛 [Report Issues](https://github.com/plsft/noundry-cloud-cli/issues)
-- 💬 [Discussions](https://github.com/plsft/noundry-cloud-cli/discussions)
+- 🐛 [Report Issues](https://github.com/Noundry/Cloud/issues)
+- 💬 [Discussions](https://github.com/Noundry/Cloud/discussions)
 
 ## 📄 **License**
 

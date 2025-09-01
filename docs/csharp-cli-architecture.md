@@ -11,24 +11,36 @@ NDC will be reimplemented as a .NET CLI tool using:
 ## Architecture Components
 
 ```
-NDC.Cli/                           # Main CLI tool
-├── Program.cs                     # Entry point
-├── Commands/                      # Command implementations
-│   ├── CreateCommand.cs          # Template creation
-│   ├── ListCommand.cs            # List available templates
-│   └── InstallCommand.cs         # Install template packages
-├── Services/                      # Core services
-│   ├── TemplateService.cs        # Template management
-│   ├── AspireService.cs          # Aspire integration
-│   └── CloudService.cs           # Cloud provider services
-└── NDC.Cli.csproj                # Tool project file
+src/                               # Source code
+├── NDC.Cli/                      # Main CLI tool
+│   ├── Program.cs                # Entry point
+│   ├── Commands/                 # Command implementations
+│   │   ├── CreateCommand.cs     # Template creation
+│   │   ├── ListCommand.cs       # List available templates
+│   │   └── InstallCommand.cs    # Install template packages
+│   ├── Services/                 # Core services
+│   │   ├── TemplateService.cs   # Template management
+│   │   ├── AspireService.cs     # Aspire integration
+│   │   └── CloudService.cs      # Cloud provider services
+│   └── NDC.Cli.csproj           # Tool project file
+└── NDC.Templates.WebApp/         # Multi-cloud template package
+    └── content/                  # Template content
+        ├── webapp-aws/           # AWS App Runner templates
+        ├── webapp-gcp/           # Google Cloud Run templates  
+        ├── webapp-azure/         # Azure Container Apps templates
+        └── webapp-container/     # Docker/Kubernetes templates
 
-NDC.Templates.WebApp/             # Multi-cloud template package
-└── content/                      # Template content
-    ├── webapp-aws/               # AWS App Runner templates
-    ├── webapp-gcp/               # Google Cloud Run templates  
-    ├── webapp-azure/             # Azure Container Apps templates
-    └── webapp-container/         # Docker/Kubernetes templates
+tests/                            # Test projects
+└── NDC.Cli.Tests/               # Unit tests for CLI
+    ├── Commands/                # Command tests
+    ├── Services/                # Service tests
+    └── Models/                  # Model tests
+
+examples/                         # Working examples
+├── working-aws-template/        # Complete AWS example
+├── working-gcp-template/        # Complete GCP example
+├── working-azure-template/      # Complete Azure example
+└── working-container-template/  # Complete container example
 ```
 
 ## .NET Template Structure
@@ -53,7 +65,7 @@ content/                           # Template files
 dotnet tool install --global NDC.Cli
 
 # Use working examples (current approach)
-git clone https://github.com/plsft/noundry-cloud-cli.git
+git clone https://github.com/Noundry/Cloud.git
 cd noundry-cloud-cli
 
 # Future: Install template packages
