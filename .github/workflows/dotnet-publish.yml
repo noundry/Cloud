@@ -135,8 +135,8 @@ jobs:
           dotnet tool install --global NDC.Cli
           
           # Use working examples
-          git clone https://github.com/plsft/noundry-cloud-cli.git
-          cd noundry-cloud-cli
+          git clone https://github.com/noundry/Cloud.git
+          cd Cloud
           ```
           
           #### 🛠️ Usage
